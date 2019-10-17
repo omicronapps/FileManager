@@ -1,25 +1,101 @@
 package com.omicronapplications.filelib;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 
-public class FileManager {
+public class FileManager extends BroadcastReceiver {
+    public static final int STORAGE_ILLEGAL = -1;
+    public static final int STORAGE_INTERNAL = 0;
+    public static final int STORAGE_EXTERNAL_1 = 1;
+    public static final int STORAGE_EXTERNAL_2 = 2;
     private static final String TAG = "FileManager";
     private final Context mContext;
-    private boolean mExternal;
+    private IMountCallback mCallback;
+    private int mStorage;
     private File mCurrentDir;
 
-    public FileManager(Context context, boolean external) {
+    public FileManager(Context context, int storage) {
         mContext = context;
-        mExternal = external;
+        mStorage = storage;
         mCurrentDir = getTopDir();
     }
 
     public FileManager(Context context) {
-        this(context, false);
+        this(context, STORAGE_INTERNAL);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        int count = getStorageCount(false);
+        if (mCallback == null || action == null) {
+            return;
+        }
+        switch (action) {
+            case Intent.ACTION_MEDIA_EJECT:
+            case Intent.ACTION_MEDIA_MOUNTED:
+            case Intent.ACTION_MEDIA_UNMOUNTED:
+            case Intent.ACTION_MEDIA_REMOVED:
+                mCallback.onMediaChanged(count);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void setCallback(IMountCallback callback) {
+        mCallback = callback;
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        mContext.registerReceiver(this, filter);
+    }
+
+    public void unsetCallback() {
+        mContext.unregisterReceiver(this);
+        mCallback = null;
+    }
+
+    public int getStorageCount(boolean notify) {
+        int count = 1;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            File[] externals = mContext.getExternalFilesDirs(null);
+            if (externals != null) {
+                if (externals.length > 0 && externals[0] != null) {
+                    count++;
+                    if (externals.length > 1 && externals[1] != null) {
+                        count++;
+                    }
+                }
+            }
+        } else {
+            File external = mContext.getExternalFilesDir(null);
+            if (external != null) {
+                count++;
+            }
+        }
+        if (mStorage >= count) {
+            Log.w(TAG, "checkStorage: media removed " + mStorage);
+            mStorage = STORAGE_INTERNAL;
+            mCurrentDir = getTopDir();
+            if (notify && mCallback != null) {
+                mCallback.onMediaChanged(count);
+            }
+        }
+        return count;
+    }
+
+    public int getStorageCount() {
+        return getStorageCount(true);
     }
 
     public File createNewFile(String name) {
@@ -109,9 +185,16 @@ public class FileManager {
         return mCurrentDir;
     }
 
-    public File changeDirTop(boolean external) {
-        mExternal = external;
-        return changeDir(getTopDir());
+    public File changeDirTop(int storage) {
+        File dir = null;
+        int count = getStorageCount();
+        if (storage < count) {
+            mStorage = storage;
+            dir = changeDir(getTopDir());
+        } else {
+            Log.w(TAG, "changeDirTop: illegal storage " + storage);
+        }
+        return dir;
     }
 
     public File changeDirTop() {
@@ -134,13 +217,12 @@ public class FileManager {
         return changeDir(dir);
     }
 
-    public File swapDirTop() {
-        mExternal = !mExternal;
-        return changeDir(getTopDir());
-    }
-
     public boolean isTopDir() {
-        return getTopDir().equals(getDir());
+        File dir = getTopDir();
+        if (dir == null) {
+            return false;
+        }
+        return dir.equals(getDir());
     }
 
     public File getFile(String name) {
@@ -155,40 +237,52 @@ public class FileManager {
         return new File(mCurrentDir, name);
     }
 
-    public boolean isExternal() {
-        return mExternal;
+    public int getStorage() {
+        return mStorage;
     }
 
-    public boolean isExternal(String name) {
-        boolean isExternal = false;
+    public int inStorage(String name) {
+        int storage = STORAGE_ILLEGAL;
         if (!isValidName(name)) {
-            Log.w(TAG, "isExternal: Illegal file " + name);
-            return false;
+            Log.w(TAG, "inStorage: Illegal file " + name);
+            return storage;
         }
-        File dir = mContext.getExternalFilesDir(null);
-        if (dir != null && name != null) {
-            String dirName = dir.getAbsolutePath();
-            isExternal = name.startsWith(dirName);
+        File dir = mContext.getFilesDir();
+        if (dir != null) {
+            if (name.startsWith(dir.getAbsolutePath())) {
+                storage = STORAGE_INTERNAL;
+            }
         }
-        return isExternal;
+        dir = mContext.getExternalFilesDir(null);
+        if (storage == STORAGE_ILLEGAL && dir != null) {
+            if (name.startsWith(dir.getAbsolutePath())) {
+                storage = STORAGE_EXTERNAL_1;
+            }
+        }
+        if (storage == STORAGE_ILLEGAL && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            File[] externals = mContext.getExternalFilesDirs(null);
+            if (externals != null && externals.length > 1 && externals[1] != null) {
+                dir = externals[1];
+                if (name.startsWith(dir.getAbsolutePath())) {
+                    storage = STORAGE_EXTERNAL_2;
+                }
+            }
+        }
+        return storage;
     }
 
     public String getFileName(String name) {
         String dirName = null;
         if (!isValidName(name)) {
+            Log.w(TAG, "getFileName: Illegal file " + name);
             return null;
         }
-        File dir = mContext.getExternalFilesDir(null);
+        int storage = inStorage(name);
+        File dir = getTopDir(storage);
         if (dir != null) {
             dirName = dir.getAbsolutePath();
-            if (!name.startsWith(dirName)) {
-                dir = mContext.getFilesDir();
-                if (dir != null) {
-                    dirName = dir.getAbsolutePath();
-                }
-            }
         }
-        if ((dirName == null) || !name.startsWith(dirName)) {
+        if (dirName == null || !name.startsWith(dirName)) {
             Log.w(TAG, "getFileName: Illegal path " + name);
             return null;
         }
@@ -199,29 +293,58 @@ public class FileManager {
         return name;
     }
 
-    public File getTopDir() {
-        File dir;
-        if (mExternal) {
-            dir = mContext.getExternalFilesDir(null);
-        } else {
-            dir = mContext.getFilesDir();
+    public File getTopDir(int storage) {
+        getStorageCount();
+        File dir = null;
+        switch (storage) {
+            case STORAGE_INTERNAL:
+                dir = mContext.getFilesDir();
+                break;
+            case STORAGE_EXTERNAL_1:
+                dir = mContext.getExternalFilesDir(null);
+                break;
+            case STORAGE_EXTERNAL_2:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    File[] externals = mContext.getExternalFilesDirs(null);
+                    if (externals != null && externals.length > 1 && externals[1] != null) {
+                        dir = externals[1];
+                    } else {
+                        Log.w(TAG, "getTopDir: storage not available " + externals);
+                    }
+                } else {
+                    Log.w(TAG, "getTopDir: Not supported in SDK version " + Build.VERSION.SDK_INT);
+                }
+                break;
+            default:
+                Log.w(TAG, "getTopDir: storage not supported " + storage);
+                break;
         }
         return dir;
+    }
+
+    public File getTopDir() {
+        return getTopDir(mStorage);
     }
 
     public boolean startsWith(File file) {
         boolean startsWith = false;
         String name = file.getAbsolutePath();
-        File dir = mContext.getExternalFilesDir(null);
-        if (dir != null && name != null) {
-            String dirName = dir.getAbsolutePath();
-            startsWith = name.startsWith(dirName);
+        if (name == null) {
+            return startsWith;
         }
-        if (!startsWith) {
-            dir = mContext.getFilesDir();
-            if (dir != null && name != null) {
-                String dirName = dir.getAbsolutePath();
-                startsWith = name.startsWith(dirName);
+        File dir = mContext.getFilesDir();
+        if (dir != null) {
+            startsWith = name.startsWith(dir.getAbsolutePath());
+        }
+        dir = mContext.getExternalFilesDir(null);
+        if (!startsWith && dir != null) {
+            startsWith = name.startsWith(dir.getAbsolutePath());
+        }
+        if (!startsWith && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            File[] externals = mContext.getExternalFilesDirs(null);
+            if (externals != null && externals.length > 1 && externals[1] != null) {
+                dir = externals[1];
+                startsWith = name.startsWith(dir.getAbsolutePath());
             }
         }
         return startsWith;
@@ -236,6 +359,6 @@ public class FileManager {
     }
 
     private boolean isValidName(String name) {
-        return ((name != null) && !name.isEmpty());
+        return (name != null) && !name.isEmpty();
     }
 }

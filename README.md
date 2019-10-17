@@ -22,7 +22,7 @@ FileManager is used in [AndPlug](https://play.google.com/store/apps/details?id=c
 ## Prerequisites
 
 - [Android 4.0.3](https://developer.android.com/about/versions/android-4.0.3) (API Level: 15) or later (`ICE_CREAM_SANDWICH_MR1`)
-- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 3.4.1 or later (`gradle:3.4.1`)
+- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 3.5.1 or later (`gradle:3.5.1`)
 
 ## Installation
 
@@ -46,10 +46,10 @@ FileManager is controlled through the following class:
 
 ## Example
 
-Create new `FileManager` instance, using application external storage:
+Create new `FileManager` instance, using application external storage 1:
 
 ```
-FileManager fileManager = new FileManager(getApplicationContext(), true);
+FileManager fileManager = new FileManager(getApplicationContext(), FileManager.STORAGE_EXTERNAL_1);
 ```
 
 Create and enter new directory: 
@@ -92,7 +92,7 @@ File dir = fileManager.changeDirTop();
 Change to application internal storage:
 
 ```
-File dir = fileManager.changeDirTop(false);
+File dir = fileManager.changeDirTop(FileManager.STORAGE_INTERNAL);
 ```
 
 ## Credits
@@ -102,6 +102,9 @@ Copyright (C) 2019 [Fredrik Claesson](https://github.com/omicronapps)
 ## Release History
 
 - 1.0.0 Initial release
+- 1.1.0 Support for additional external storage device, where available (Android KitKat 4.4 and later only)
+
+  Detection and callbacks for mounting and removal of external storage devices
 
 ## License
 
