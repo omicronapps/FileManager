@@ -25,9 +25,18 @@ public class FileManagerTest {
 
     private Context mAppContext;
     private FileManager mFileManager;
+    private Callback mCallback;
 
-    private void deleteTestFiles(boolean external) {
-        mFileManager = new FileManager(mAppContext, external);
+    private static class Callback implements IMountCallback {
+        @Override
+        public void onMount(int count) {}
+
+        @Override
+        public void onMediaChanged(int count) {}
+    }
+
+    private void deleteTestFiles(int storage) {
+        mFileManager = new FileManager(mAppContext, storage);
         mFileManager.changeDirTop();
         mFileManager.delete(TEST_FILE1);
         mFileManager.changeDir(TEST_DIR1);
@@ -40,12 +49,15 @@ public class FileManagerTest {
     @Before
     public void setup() {
         mAppContext = InstrumentationRegistry.getTargetContext();
-        deleteTestFiles(false);
-        deleteTestFiles(true);
+        deleteTestFiles(FileManager.STORAGE_INTERNAL);
+        deleteTestFiles(FileManager.STORAGE_EXTERNAL_1);
+        deleteTestFiles(FileManager.STORAGE_EXTERNAL_2);
+        mCallback = new Callback();
     }
 
-    private void testFiles(boolean external) {
-        mFileManager = new FileManager(mAppContext, external);
+    private void testFiles(int storage) {
+        mFileManager = new FileManager(mAppContext, storage);
+        mFileManager.setCallback(mCallback);
         File dir = mFileManager.getDir();
 
         assertEquals("changeDir", mFileManager.changeDir(dir), dir);
@@ -73,8 +85,9 @@ public class FileManagerTest {
         assertEquals("length", dirFiles.length, 0);
     }
 
-    private void testDirs(boolean external) {
-        mFileManager = new FileManager(mAppContext, external);
+    private void testDirs(int storage) {
+        mFileManager = new FileManager(mAppContext, storage);
+        mFileManager.setCallback(mCallback);
         File topDir = mFileManager.getDir();
         assertEquals("changeDir", mFileManager.changeDir(topDir), topDir);
 
@@ -103,15 +116,22 @@ public class FileManagerTest {
     @Test
     public void testTopDirs() {
         mFileManager = new FileManager(mAppContext);
+        mFileManager.setCallback(mCallback);
 
         // Internal
-        File dir = mFileManager.changeDirTop(false);
+        File dir = mFileManager.changeDirTop(FileManager.STORAGE_INTERNAL);
         assertNotNull("null", dir);
         assertTrue("absolutePath", dir.getAbsolutePath().contains(mAppContext.getPackageName()));
         assertEquals("name", dir.getName(), "files");
 
-        // External
-        dir = mFileManager.changeDirTop(true);
+        // External 1
+        dir = mFileManager.changeDirTop(FileManager.STORAGE_EXTERNAL_1);
+        assertNotNull("null", dir);
+        assertTrue("absolutePath", dir.getAbsolutePath().contains(mAppContext.getPackageName()));
+        assertEquals("name", dir.getName(), "files");
+
+        // External 2
+        dir = mFileManager.changeDirTop(FileManager.STORAGE_EXTERNAL_2);
         assertNotNull("null", dir);
         assertTrue("absolutePath", dir.getAbsolutePath().contains(mAppContext.getPackageName()));
         assertEquals("name", dir.getName(), "files");
@@ -119,16 +139,21 @@ public class FileManagerTest {
 
     @Test
     public void testInternalFiles() {
-        testFiles(false);
+        testFiles(FileManager.STORAGE_INTERNAL);
     }
 
     @Test
-    public void testExternalFiles() {
-        testFiles(true);
+    public void testExternalFiles1() {
+        testFiles(FileManager.STORAGE_EXTERNAL_1);
+    }
+
+    @Test
+    public void testExternalFiles2() {
+        testFiles(FileManager.STORAGE_EXTERNAL_2);
     }
 
     @Test
     public void testInternalDirs() {
-        testDirs(false);
+        testDirs(FileManager.STORAGE_INTERNAL);
     }
 }
