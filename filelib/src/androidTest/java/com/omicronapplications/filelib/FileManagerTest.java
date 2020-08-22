@@ -60,14 +60,14 @@ public class FileManagerTest {
         assertEquals("changeDir", mFileManager.changeDir(dir), dir);
         String[] dirs = mFileManager.list();
         assertEquals("length", dirs.length, 0);
-        File[] dirFiles = mFileManager.listFiles();
+        File[] dirFiles = mFileManager.listFiles(FileManager.SORT_NONE);
         assertEquals("length", dirFiles.length, 0);
 
         // Create new file
         mFileManager.createNewFile(TEST_FILE1);
         mFileManager.createNewFile(TEST_FILE2);
         mFileManager.createNewFile(TEST_FILE3);
-        dirFiles = mFileManager.listFiles();
+        dirFiles = mFileManager.listFiles(FileManager.SORT_NONE);
         assertEquals("length", dirFiles.length, 3);
         dirs = mFileManager.list();
         assertEquals("length", dirs.length, 3);
@@ -78,7 +78,7 @@ public class FileManagerTest {
         }
         dirs = mFileManager.list();
         assertEquals("length", dirs.length, 0);
-        dirFiles = mFileManager.listFiles();
+        dirFiles = mFileManager.listFiles(FileManager.SORT_NONE);
         assertEquals("length", dirFiles.length, 0);
     }
 

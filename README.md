@@ -103,9 +103,9 @@ Copyright (C) 2019-2020 [Fredrik Claesson](https://github.com/omicronapps)
 
 - 1.0.0 Initial release
 - 1.1.0 Support for additional external storage device, where available (Android KitKat 4.4 and later only)
-- 1.2.0 Migrated to AndroidX
-
   Detection and callbacks for mounting and removal of external storage devices
+- 1.2.0 Migrated to AndroidX
+- 1.3.0 Added support for sorting files
 
 ## License
 

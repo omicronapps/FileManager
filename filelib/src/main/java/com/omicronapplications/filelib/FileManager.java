@@ -9,12 +9,18 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class FileManager extends BroadcastReceiver {
     public static final int STORAGE_ILLEGAL = -1;
     public static final int STORAGE_INTERNAL = 0;
     public static final int STORAGE_EXTERNAL_1 = 1;
     public static final int STORAGE_EXTERNAL_2 = 2;
+    public static final int SORT_NONE = 0;
+    public static final int SORT_ASCENDING = 1;
+    public static final int SORT_DESCENDING = 2;
     private static final String TAG = "FileManager";
     private final Context mContext;
     private IMountCallback mCallback;
@@ -130,10 +136,18 @@ public class FileManager extends BroadcastReceiver {
         return dirs;
     }
 
-    public File[] listFiles() {
+    public File[] listFiles(int order) {
         File[] dirFiles = null;
         if (isValidDir(mCurrentDir)) {
             dirFiles = mCurrentDir.listFiles();
+            if (dirFiles != null) {
+                if (order == SORT_ASCENDING | order == SORT_DESCENDING) {
+                    Arrays.sort(dirFiles, new IgnoreCaseComparator());
+                }
+                if (order == SORT_DESCENDING) {
+                    Arrays.sort(dirFiles, Collections.reverseOrder());
+                }
+            }
         }
         return dirFiles;
     }
@@ -350,6 +364,10 @@ public class FileManager extends BroadcastReceiver {
         return startsWith;
     }
 
+    public void onSongInfo(String song, long songlength, String type, String title, String author, String desc, int subsongs) {
+        ;
+    }
+
     private boolean isValidFile(File file) {
         return (file != null) && file.exists() && !file.isDirectory();
     }
@@ -360,5 +378,14 @@ public class FileManager extends BroadcastReceiver {
 
     private boolean isValidName(String name) {
         return (name != null) && !name.isEmpty();
+    }
+
+    private static class IgnoreCaseComparator implements Comparator<File> {
+        @Override
+        public int compare(File o1, File o2) {
+            String s1 = o1.getName().toLowerCase();
+            String s2 = o2.getName().toLowerCase();
+            return s1.compareTo(s2);
+        }
     }
 }
