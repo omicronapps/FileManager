@@ -141,7 +141,7 @@ public class FileManager extends BroadcastReceiver {
         if (isValidDir(mCurrentDir)) {
             dirFiles = mCurrentDir.listFiles();
             if (dirFiles != null) {
-                if (order == SORT_ASCENDING | order == SORT_DESCENDING) {
+                if (order == SORT_ASCENDING || order == SORT_DESCENDING) {
                     Arrays.sort(dirFiles, new IgnoreCaseComparator());
                 }
                 if (order == SORT_DESCENDING) {
@@ -362,10 +362,6 @@ public class FileManager extends BroadcastReceiver {
             }
         }
         return startsWith;
-    }
-
-    public void onSongInfo(String song, long songlength, String type, String title, String author, String desc, int subsongs) {
-        ;
     }
 
     private boolean isValidFile(File file) {
