@@ -285,10 +285,10 @@ public class FileManager extends BroadcastReceiver {
         return storage;
     }
 
-    public String getFileName(String name) {
+    public String getPathAndName(String name) {
         String dirName = null;
         if (!isValidName(name)) {
-            Log.w(TAG, "getFileName: Illegal file " + name);
+            Log.w(TAG, "getPathAndName: Illegal file " + name);
             return null;
         }
         int storage = inStorage(name);
@@ -297,7 +297,7 @@ public class FileManager extends BroadcastReceiver {
             dirName = dir.getAbsolutePath();
         }
         if (dirName == null || !name.startsWith(dirName)) {
-            Log.w(TAG, "getFileName: Illegal path " + name);
+            Log.w(TAG, "getPathAndName: Illegal path " + name);
             return null;
         }
         name = name.replaceFirst(dirName, "");
@@ -305,6 +305,17 @@ public class FileManager extends BroadcastReceiver {
             name = name.replaceFirst(File.separator, "");
         }
         return name;
+    }
+
+    public String getPath(String name) {
+        String path = getPathAndName(name);
+        int index = path.lastIndexOf(File.separatorChar);
+        if (index != -1) {
+            path = path.substring(0, index);
+        } else {
+            path = null;
+        }
+        return path;
     }
 
     public File getTopDir(int storage) {

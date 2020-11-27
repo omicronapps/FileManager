@@ -22,7 +22,7 @@ FileManager is used in [AndPlug](https://play.google.com/store/apps/details?id=c
 ## Prerequisites
 
 - [Android 4.0.3](https://developer.android.com/about/versions/android-4.0.3) (API Level: 15) or later (`ICE_CREAM_SANDWICH_MR1`)
-- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 4.0.1 or later (`gradle:4.0.1`)
+- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 4.1.1 or later (`gradle:4.1.1`)
 
 ## Installation
 
@@ -107,6 +107,7 @@ Copyright (C) 2019-2020 [Fredrik Claesson](https://github.com/omicronapps)
 - 1.2.0 Migrated to AndroidX
 - 1.3.0 Added support for sorting files
 - 1.4.0 Minor bugfix
+- 1.5.0 Separate method for path-only and path-with-name
 
 ## License
 
