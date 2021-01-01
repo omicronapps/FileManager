@@ -108,6 +108,7 @@ Copyright (C) 2019-2020 [Fredrik Claesson](https://github.com/omicronapps)
 - 1.3.0 Added support for sorting files
 - 1.4.0 Minor bugfix
 - 1.5.0 Separate method for path-only and path-with-name
+- 1.6.0 Fix delete and rename implementations
 
 ## License
 

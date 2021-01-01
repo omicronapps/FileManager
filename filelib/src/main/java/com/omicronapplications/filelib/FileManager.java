@@ -120,12 +120,8 @@ public class FileManager extends BroadcastReceiver {
     }
 
     public boolean delete(String name) {
-        File file = getFile(name);
-        if (file != null) {
-            return file.delete();
-        } else {
-            return false;
-        }
+        File file = new File(name);
+        return file.delete();
     }
 
     public String[] list() {
@@ -163,7 +159,7 @@ public class FileManager extends BroadcastReceiver {
     }
 
     public boolean renameTo(File file, String name) {
-        if (!isValidFile(file)) {
+        if (!isValidFile(file) && !isValidDir(file)) {
             Log.w(TAG, "renameTo: Illegal file " + file);
             return false;
         }
@@ -171,7 +167,7 @@ public class FileManager extends BroadcastReceiver {
             Log.w(TAG, "renameTo: Illegal dir " + name);
             return false;
         }
-        String path = file.getAbsolutePath();
+        String path = file.getParent();
         File dest = new File(path, name);
         return file.renameTo(dest);
     }
