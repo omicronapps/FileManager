@@ -22,7 +22,7 @@ FileManager is used in [AndPlug](https://play.google.com/store/apps/details?id=c
 ## Prerequisites
 
 - [Android 4.0.3](https://developer.android.com/about/versions/android-4.0.3) (API Level: 15) or later (`ICE_CREAM_SANDWICH_MR1`)
-- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 7.0.7 or later (`gradle:7.0.1`)
+- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 7.2.2 or later (`gradle:7.2.2`)
 
 ## Installation
 
@@ -46,10 +46,10 @@ FileManager is controlled through the following class:
 
 ## Example
 
-Create new `FileManager` instance, using application external storage 1:
+Create new `FileManager` instance, using the first application external storage:
 
 ```
-FileManager fileManager = new FileManager(getApplicationContext(), FileManager.STORAGE_EXTERNAL_1);
+FileManager fileManager = new FileManager(getApplicationContext(), FileManager.STORAGE_EXTERNAL);
 ```
 
 Create and enter new directory: 
@@ -97,7 +97,7 @@ File dir = fileManager.changeDirTop(FileManager.STORAGE_INTERNAL);
 
 ## Credits
 
-Copyright (C) 2019-2021 [Fredrik Claesson](https://github.com/omicronapps)
+Copyright (C) 2019-2023 [Fredrik Claesson](https://www.omicronapplications.com/)
 
 ## Release History
 
@@ -109,7 +109,8 @@ Copyright (C) 2019-2021 [Fredrik Claesson](https://github.com/omicronapps)
 - 1.4.0 Minor bugfix
 - 1.5.0 Separate method for path-only and path-with-name
 - 1.6.0 Fix delete and rename implementations
+- 1.7.0 Support for multiple external files dirs, change to Apache License Version 2.0
 
 ## License
 
-FileManager is licensed under [GNU LESSER GENERAL PUBLIC LICENSE](LICENSE).
+FileManager is licensed under [Apache License Version 2.0](LICENSE).
