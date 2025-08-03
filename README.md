@@ -22,7 +22,7 @@ FileManager is used in [AndPlug](https://play.google.com/store/apps/details?id=c
 ## Prerequisites
 
 - [Android 4.0.3](https://developer.android.com/about/versions/android-4.0.3) (API Level: 15) or later (`ICE_CREAM_SANDWICH_MR1`)
-- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 7.2.2 or later (`gradle:7.2.2`)
+- [Android Gradle Plugin](https://developer.android.com/studio/releases/gradle-plugin) 8.11.1 or later (`gradle:8.11.1`)
 
 ## Installation
 
@@ -97,7 +97,7 @@ File dir = fileManager.changeDirTop(FileManager.STORAGE_INTERNAL);
 
 ## Credits
 
-Copyright (C) 2019-2023 [Fredrik Claesson](https://www.omicronapplications.com/)
+Copyright (C) 2019-2025 [Fredrik Claesson](https://www.omicronapplications.com/)
 
 ## Release History
 
@@ -110,6 +110,7 @@ Copyright (C) 2019-2023 [Fredrik Claesson](https://www.omicronapplications.com/)
 - 1.5.0 Separate method for path-only and path-with-name
 - 1.6.0 Fix delete and rename implementations
 - 1.7.0 Support for multiple external files dirs, change to Apache License Version 2.0
+- 1.8.0 Target Android 15 (API level 35)
 
 ## License
 
